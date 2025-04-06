@@ -1,0 +1,123 @@
+{% extends "base.html" %} {% block content %}
+<div class="container">
+  <style>
+    /* Styles pour le formulaire d'événement */
+    .event-creation-container {
+      max-width: 500px; /* Ajustez selon les besoins */
+      margin: 50px auto; /* Centrer le formulaire */
+      padding: 20px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .event-form {
+      display: flex; /* Arranger les éléments du formulaire en ligne */
+      flex-direction: column; /* Empiler les éléments verticalement */
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 0.9rem;
+      margin-top: 5px;
+    }
+
+    .btnvalid {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btnvalid:hover {
+      background-color: #0056b3;
+    }
+  </style>
+
+  <div class="event-creation-container">
+    <h2>Créer un événement</h2>
+    <form method="post" class="event-form">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label for="id_name">Nom de l'événement :</label>
+        {{ form.name }}
+        <span class="error-message">{{ form.name.errors }}</span>
+      </div>
+
+      <div class="form-group">
+        <label for="id_start_date">Date de début :</label>
+        <input
+          type="date"
+          class="form-control"
+          id="id_start_date"
+          name="start_date"
+          required
+        />
+        <span class="error-message"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="id_start_time">Heure de début :</label>
+        <input
+          type="time"
+          class="form-control"
+          id="id_start_time"
+          name="start_time"
+          required
+        />
+        <span class="error-message"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="id_end_date">Date de fin :</label>
+        <input
+          type="date"
+          class="form-control"
+          id="id_end_date"
+          name="end_date"
+          required
+        />
+        <span class="error-message"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="id_end_time">Heure de fin :</label>
+        <input
+          type="time"
+          class="form-control"
+          id="id_end_time"
+          name="end_time"
+          required
+        />
+        <span class="error-message"></span>
+      </div>
+
+      <button type="submit" class="btnvalid">Créer l'événement</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

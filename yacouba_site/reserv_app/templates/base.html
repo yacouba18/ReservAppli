@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.9.0/fullcalendar.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <nav class="navbar navbar-expand-md navbar-dark bg-primary fixed-top">
+        <a class="navbar-brand" href="{% url 'index' %}">Mon Agenda</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarsExampleDefault"
+          aria-controls="navbarsExampleDefault"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="{% url 'index' %}"
+                >Accueil<span class="sr-only"></span
+              ></a>
+            </li>
+          </ul>
+          <ul class="navbar-nav ml-auto">
+            {% if user.is_authenticated %}
+            <li class="nav-item active">
+              <a class="nav-link" href="#">{{user}}</a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="{% url 'creer_event' %}"
+                >Ajouter un nouvel événement</a
+              >
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="{% url 'lister_event' %}"
+                >Mes évenements</a
+              >
+            </li>
+            {% if user.is_superuser %}
+            <li class="nav-item active">
+              <a class="nav-link" href="/admin/">Administration</a>
+            </li>
+            {% endif %}
+            <li class="nav-item active">
+              <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="nav-link btn btn-link">
+                  Déconnexion
+                </button>
+              </form>
+            </li>
+
+            {% else %}
+            <li class="nav-item active">
+              <a class="nav-link" href="{% url 'login' %}">Connexion</a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="{% url 'register' %}">Inscription</a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <div class="container">
+      <div class="row">{% block content %} {% endblock %}</div>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        var calendar = $("#calendar").fullCalendar({
+          header: {
+            left: "prev,next today",
+            center: "title",
+            right: "month,agendaWeek,agendaDay",
+            locale: "fr",
+          },
+          events: "/evenements",
+          selectable: true,
+          selectHelper: true,
+          eventLimit: true,
+          select: function (start, end, allDay) {
+            var title = prompt("Entrer le nom de l'événement");
+            if (title) {
+              var start = $.fullCalendar.formatDate(start, "Y-MM-DD HH:mm:ss");
+              var end = $.fullCalendar.formatDate(end, "Y-MM-DD HH:mm:ss");
+              $.ajax({
+                type: "GET",
+                url: "/add_evenement",
+                data: {
+                  title: title,
+                  start: start,
+                  end: end,
+                },
+                dataType: "json",
+                success: function (data) {
+                  calendar.fullCalendar("refetchEvents");
+                  alert("Event Ajouté avec succès");
+                },
+                error: function (data) {
+                  alert("Erreur lors de l'ajout de l'événement");
+                },
+              });
+            }
+          },
+
+          eventResize: function (event) {
+            var start = $.fullCalendar.formatDate(
+              event.start,
+              "Y-MM-DD HH:mm:ss"
+            );
+            var end = $.fullCalendar.formatDate(event.end, "Y-MM-DD HH:mm:ss");
+            var title = event.title;
+            var id = event.id;
+            $.ajax({
+              url: "/edit_evenement",
+              type: "GET",
+              data: {
+                title: event.title,
+                start: start,
+                end: end,
+                id: event.id,
+              },
+              success: function (data) {
+                calendar.fullCalendar("refetchEvents");
+                alert("Event modifié avec succès");
+              },
+              error: function (data) {
+                alert("Erreur lors de la modification de l'événement");
+              },
+            });
+          },
+          eventDrop: function (event) {
+            var start = $.fullCalendar.formatDate(
+              event.start,
+              "Y-MM-DD HH:mm:ss"
+            );
+            var end = $.fullCalendar.formatDate(event.end, "Y-MM-DD HH:mm:ss");
+            var title = event.title;
+            var id = event.id;
+            $.ajax({
+              url: "/edit_evenement",
+              type: "GET",
+              data: {
+                title: event.title,
+                start: start,
+                end: end,
+                id: event.id,
+              },
+              success: function (data) {
+                calendar.fullCalendar("refetchEvents");
+                alert("Event modifié avec succès");
+              },
+              error: function (data) {
+                alert("Erreur lors de la modification de l'événement");
+              },
+            });
+          },
+
+          eventClick: function (event) {
+            if (confirm("Voulez-vous vraiment supprimer cet événement ?")) {
+              var id = event.id;
+              $.ajax({
+                url: "/delete_evenement",
+                type: "GET",
+                data: {
+                  id: id,
+                },
+                success: function (data) {
+                  calendar.fullCalendar("refetchEvents");
+                  alert("Event supprimé avec succès");
+                },
+                error: function (data) {
+                  alert("Erreur lors de la suppression de l'événement");
+                },
+              });
+            }
+          },
+        });
+      });
+    </script>
+  </body>
+
+  <style>
+    body {
+      margin-top: 60px;
+    }
+  </style>
+</html>
